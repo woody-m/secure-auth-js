@@ -1,8 +1,10 @@
 import bcrypt from 'bcrypt';
 import db from '../config/database.js';
+import { generateToken } from '../utils/token.util.js';
 
 const SALT_ROUNDS = 10;
 
+// 👇 CADASTRO (OBRIGATÓRIO)
 export function registerUser({ email, password }) {
   return new Promise(async (resolve, reject) => {
     try {
@@ -27,12 +29,41 @@ export function registerUser({ email, password }) {
 
         resolve({
           id: this.lastID,
-          email
+          email,
         });
       });
-    } catch (error) {
+    } catch {
       reject({ status: 500, message: 'Erro interno' });
     }
+  });
+}
+
+// 👇 LOGIN (O QUE VOCÊ ADICIONOU)
+export function loginUser({ email, password }) {
+  return new Promise((resolve, reject) => {
+    if (!email || !password) {
+      return reject({ status: 400, message: 'Credenciais inválidas' });
+    }
+
+    const query = `SELECT * FROM users WHERE email = ?`;
+
+    db.get(query, [email], async (err, user) => {
+      if (err || !user) {
+        return reject({ status: 401, message: 'Credenciais inválidas' });
+      }
+
+      const match = await bcrypt.compare(password, user.password);
+      if (!match) {
+        return reject({ status: 401, message: 'Credenciais inválidas' });
+      }
+
+      const token = generateToken({
+        id: user.id,
+        role: user.role,
+      });
+
+      resolve({ token });
+    });
   });
 }
 
