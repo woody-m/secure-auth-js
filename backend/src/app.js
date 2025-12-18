@@ -1,6 +1,7 @@
 import express from 'express';
 import authRoutes from './routes/auth.routes.js';
 import profileRoutes from './routes/profile.routes.js';
+import adminRoutes from './routes/admin.routes.js';
 
 const app = express();
 
@@ -8,6 +9,7 @@ app.use(express.json());
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1', profileRoutes);
+app.use('/api/v1', adminRoutes);
 
 export default app;
 
